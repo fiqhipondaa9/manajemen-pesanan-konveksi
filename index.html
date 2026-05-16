@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Manajemen Konveksi</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    
+    <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+
+<div class="container">
+    <h2>Manajemen Pesanan Konveksi</h2>
+
+    <div class="action-bar">
+        <button class="btn-save" id="btnSave">💾 Simpan File JSON</button>
+        <input type="file" id="fileInput" accept=".json" style="display: none;">
+        <button class="btn-open" id="btnOpen" onclick="document.getElementById('fileInput').click()">📂 Buka File JSON</button>
+        <button class="btn-pdf" id="btnPdf">📄 Download Laporan PDF</button>
+    </div>
+
+    <div class="form-grid">
+        <div class="form-group"><label>Tanggal Order</label><input type="date" id="inputTanggal"></div>
+        <div class="form-group"><label>Nama Pelanggan</label><input type="text" id="inputNama" placeholder="Nama lengkap"></div>
+        <div class="form-group"><label>Jenis Order</label><input type="text" id="inputJenisOrder" placeholder="Contoh: Training, Jaket"></div>
+        <div class="form-group"><label>Bahan</label><input type="text" id="inputBahan" placeholder="Contoh: Milano, Scuba"></div>
+        <div class="form-group"><label>Kerah & Jenis Cutting</label><input type="text" id="inputDetailBaju" placeholder="Contoh: Wangky / Oval"></div>
+        <div class="form-group"><label>Jumlah (PCS)</label><input type="number" id="inputPcs" placeholder="0"></div>
+        <div class="form-group"><label>Harga Satuan (Rp)</label><input type="number" id="inputHarga" placeholder="0"></div>
+        <div class="form-group"><label>DP / Uang Muka (Rp)</label><input type="number" id="inputDp" placeholder="0"></div>
+        <div class="form-group">
+            <label>Jenis Pembayaran</label>
+            <select id="inputJenisPembayaran">
+                <option value="CASH">CASH</option>
+                <option value="TRANSFER">TRANSFER</option>
+                <option value="QRIS">QRIS</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Status Pengerjaan</label>
+            <select id="inputPengerjaan">
+                <option value="Design">Design</option>
+                <option value="Print/Cetak">Print/Cetak</option>
+                <option value="Press">Press</option>
+                <option value="Jahit">Jahit</option>
+                <option value="Packing">Packing</option>
+                <option value="Selesai">Selesai</option>
+            </select>
+        </div>
+        <div class="form-group"><label>Penjahit</label><input type="text" id="inputPenjahit" placeholder="Nama Penjahit"></div>
+    </div>
+    
+    <button class="btn-add" id="btnAddOrder">+ Tambah Pesanan ke Tabel</button>
+
+    <div class="table-wrapper">
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>NO</th><th>NAMA</th><th>JENIS ORDER</th><th>BAHAN & KERAH</th>
+                    <th>PCS</th><th>HARGA</th><th>TOTAL</th><th>TANGGAL</th>
+                    <th>DP</th><th>SISA PELUNASAN</th><th>PEMBAYARAN</th>
+                    <th>PENGERJAAN</th><th>PENJAHIT</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
