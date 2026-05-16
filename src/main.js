@@ -12,9 +12,13 @@ btnAddOrder.addEventListener('click', () => {
   const nama = document.getElementById('inputNama').value;
   const jenisOrder = document.getElementById('inputJenisOrder').value;
   const bahan = document.getElementById('inputBahan').value;
-  const detailBaju = document.getElementById('inputDetailBaju').value;
-  // parseFloat digunakan untuk memastikan angka, jika kosong jadikan 0
-  const pcs = parseFloat(document.getElementById('inputPcs').value) || 0;
+    // Mengambil nilai dari dropdown kerah dan cutting
+    const kerah = document.getElementById('inputKerah').value;
+    const cutting = document.getElementById('inputCutting').value;
+    // Menggabungkan keduanya agar sesuai dengan format tabel yang sudah ada
+    const detailBaju = kerah + " / " + cutting; 
+    
+    const pcs = parseFloat(document.getElementById('inputPcs').value) || 0;
   const harga = parseFloat(document.getElementById('inputHarga').value) || 0;
   const dp = parseFloat(document.getElementById('inputDp').value) || 0;
   const jenisPembayaran = document.getElementById('inputJenisPembayaran').value;

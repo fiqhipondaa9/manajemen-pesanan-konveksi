@@ -23,14 +23,82 @@
     </div>
 
     <div class="form-grid">
-        <div class="form-group"><label>Tanggal Order</label><input type="date" id="inputTanggal"></div>
-        <div class="form-group"><label>Nama Pelanggan</label><input type="text" id="inputNama" placeholder="Nama lengkap"></div>
-        <div class="form-group"><label>Jenis Order</label><input type="text" id="inputJenisOrder" placeholder="Contoh: Training, Jaket"></div>
-        <div class="form-group"><label>Bahan</label><input type="text" id="inputBahan" placeholder="Contoh: Milano, Scuba"></div>
-        <div class="form-group"><label>Kerah & Jenis Cutting</label><input type="text" id="inputDetailBaju" placeholder="Contoh: Wangky / Oval"></div>
-        <div class="form-group"><label>Jumlah (PCS)</label><input type="number" id="inputPcs" placeholder="0"></div>
-        <div class="form-group"><label>Harga Satuan (Rp)</label><input type="number" id="inputHarga" placeholder="0"></div>
-        <div class="form-group"><label>DP / Uang Muka (Rp)</label><input type="number" id="inputDp" placeholder="0"></div>
+        <div class="form-group">
+            <label>Tanggal Order</label>
+            <input type="date" id="inputTanggal">
+        </div>
+        <div class="form-group">
+            <label>Nama Pelanggan</label>
+            <input type="text" id="inputNama" placeholder="Nama lengkap">
+        </div>
+        
+        <div class="form-group">
+            <label>Jenis Order</label>
+            <select id="inputJenisOrder">
+                <option value="">-- Pilih Jenis Order --</option>
+                <option value="TRAINING">TRAINING</option>
+                <option value="ONE SET POLOS BOLA">ONE SET POLOS BOLA</option>
+                <option value="ONE SET FULL PRINT BOLA">ONE SET FULL PRINT BOLA</option>
+                <option value="ONE SET POLOS BASKET">ONE SET POLOS BASKET</option>
+                <option value="ONE SET FULL PRINT BASKET">ONE SET FULL PRINT BASKET</option>
+                <option value="ATASAN LENGAN PENDEK">ATASAN LENGAN PENDEK</option>
+                <option value="ATASAN LENGAN PANJANG">ATASAN LENGAN PANJANG</option>
+                <option value="JAKET">JAKET</option>
+                <option value="HOODY MANCING">HOODY MANCING</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Bahan</label>
+            <select id="inputBahan">
+                <option value="">-- Pilih Bahan --</option>
+                <option value="MILANO">MILANO</option>
+                <option value="PUMA">PUMA</option>
+                <option value="SCUBA">SCUBA</option>
+                <option value="EMBOSH GARIS">EMBOSH GARIS</option>
+                <option value="EMBOSH GELOMBANG">EMBOSH GELOMBANG</option>
+                <option value="COTTON">COTTON</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Kerah</label>
+            <select id="inputKerah">
+                <option value="">-- Pilih Kerah --</option>
+                <option value="WANGKY">WANGKY</option>
+                <option value="V-WANGKY">V-WANGKY</option>
+                <option value="V-NECK">V-NECK</option>
+                <option value="CUT V-NECK">CUT V-NECK</option>
+                <option value="V-SILANG">V-SILANG</option>
+                <option value="O-NECK">O-NECK</option>
+                <option value="SHANGHAI">SHANGHAI</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Jenis Cutting</label>
+            <select id="inputCutting">
+                <option value="">-- Pilih Cutting --</option>
+                <option value="OVAL">OVAL</option>
+                <option value="LURUS">LURUS</option>
+                <option value="BELAH SAMPING">BELAH SAMPING</option>
+                <option value="TUNIK">TUNIK</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Jumlah (PCS)</label>
+            <input type="number" id="inputPcs" placeholder="0">
+        </div>
+        <div class="form-group">
+            <label>Harga Satuan (Rp)</label>
+            <input type="number" id="inputHarga" placeholder="0">
+        </div>
+        <div class="form-group">
+            <label>DP / Uang Muka (Rp)</label>
+            <input type="number" id="inputDp" placeholder="0">
+        </div>
+        
         <div class="form-group">
             <label>Jenis Pembayaran</label>
             <select id="inputJenisPembayaran">
@@ -50,7 +118,15 @@
                 <option value="Selesai">Selesai</option>
             </select>
         </div>
-        <div class="form-group"><label>Penjahit</label><input type="text" id="inputPenjahit" placeholder="Nama Penjahit"></div>
+
+        <div class="form-group">
+            <label>Penjahit</label>
+            <select id="inputPenjahit">
+                <option value="">-- Pilih Penjahit --</option>
+                <option value="AYAT">AYAT</option>
+                <option value="ATIN">ATIN</option>
+            </select>
+        </div>
     </div>
     
     <button class="btn-add" id="btnAddOrder">+ Tambah Pesanan ke Tabel</button>
