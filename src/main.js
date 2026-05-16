@@ -1,10 +1,33 @@
+// Mengimpor alat-alat Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// Kunci Rahasia Firebase Anda
+const firebaseConfig = {
+  apiKey: "AIzaSyBBv2Xzyfrp5v5coy1nRoR4snvmxc4YK4g",
+  authDomain: "sistem-manajemen-konveksi.firebaseapp.com",
+  projectId: "sistem-manajemen-konveksi",
+  storageBucket: "sistem-manajemen-konveksi.firebasestorage.app",
+  messagingSenderId: "123814163816",
+  appId: "1:123814163816:web:37dc648680b4b6dea1d2dd",
+  measurementId: "G-QDFEWJ5DN9"
+};
+
+// Menghidupkan Firebase & Database
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Membuat referensi ke tabel/koleksi bernama "pesanan" yang diurutkan berdasarkan waktu pembuatan
+const pesananRef = collection(db, "pesanan");
+const q = query(pesananRef, orderBy("createdAt", "asc"));
+
 let dataPesanan = [];
-let editIndex = -1; // Penanda: -1 berarti "Tambah Baru", angka lain berarti "Mode Edit"
+let editId = null; // Sekarang kita menggunakan ID Unik dari Firebase, bukan Index
 
 const btnAddOrder = document.getElementById('btnAddOrder');
 const tableBody = document.getElementById('tableBody');
 
-// --- FITUR LIVE CALCULATION (Perhitungan Otomatis) ---
+// --- FITUR LIVE CALCULATION ---
 const calculateLive = () => {
     const pcs = parseFloat(document.getElementById('inputPcs').value) || 0;
     const harga = parseFloat(document.getElementById('inputHarga').value) || 0;
@@ -26,14 +49,22 @@ const calculateLive = () => {
     }
 };
 
-// Menambahkan pemicu perhitungan otomatis ke kolom input angka
 ['inputPcs', 'inputHarga', 'inputDp', 'inputPelunasan'].forEach(id => {
     document.getElementById(id).addEventListener('input', calculateLive);
 });
 
+// --- SINKRONISASI REAL-TIME DARI FIREBASE ---
+// Kode ini akan otomatis mengambil data setiap kali ada perubahan di server
+onSnapshot(q, (snapshot) => {
+    dataPesanan = [];
+    snapshot.forEach((doc) => {
+        dataPesanan.push({ id: doc.id, ...doc.data() });
+    });
+    renderTable(); // Gambar ulang tabel dengan data terbaru
+});
 
-// --- FITUR TAMBAH / SIMPAN EDIT DATA ---
-btnAddOrder.addEventListener('click', () => {
+// --- FITUR SIMPAN & EDIT KE FIREBASE ---
+btnAddOrder.addEventListener('click', async () => {
     const pesanan = {
         tanggal: document.getElementById('inputTanggal').value,
         nama: document.getElementById('inputNama').value,
@@ -61,31 +92,36 @@ btnAddOrder.addEventListener('click', () => {
         return;
     }
 
-    // Kalkulasi akhir sebelum simpan
     pesanan.total = pesanan.pcs * pesanan.harga;
     pesanan.sisaTagihan = pesanan.total - pesanan.dp - pesanan.pelunasan;
 
-    if (editIndex === -1) {
-        // Mode Tambah Baru
-        dataPesanan.push(pesanan);
-    } else {
-        // Mode Simpan Hasil Edit
-        dataPesanan[editIndex] = pesanan;
-        editIndex = -1; // Kembalikan ke mode normal
-        btnAddOrder.innerText = "+ Simpan Pesanan";
-        btnAddOrder.style.backgroundColor = "#007bff";
-    }
+    btnAddOrder.innerText = "⏳ Menyimpan..."; // Indikator loading
 
-    renderTable();
-    clearForm();
+    try {
+        if (editId) {
+            // Update data lama di Firebase
+            const docRef = doc(db, "pesanan", editId);
+            await updateDoc(docRef, pesanan);
+            editId = null;
+            btnAddOrder.style.backgroundColor = "#007bff";
+        } else {
+            // Tambah data baru ke Firebase
+            pesanan.createdAt = Date.now(); // Catat waktu agar tabel berurutan
+            await addDoc(pesananRef, pesanan);
+        }
+        clearForm();
+    } catch (error) {
+        console.error("Gagal menyimpan ke server:", error);
+        alert("Gagal menyimpan data! Pastikan Anda terhubung ke internet.");
+    } finally {
+        btnAddOrder.innerText = "+ Simpan Pesanan ke Server";
+    }
 });
 
 function clearForm() {
-    document.querySelectorAll('input').forEach(input => {
-        if(input.type !== 'file') input.value = '';
-    });
+    document.querySelectorAll('input').forEach(input => input.value = '');
     document.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
-    calculateLive(); // Reset warna dan tulisan sisa/total
+    calculateLive();
 }
 
 // --- FITUR MENAMPILKAN TABEL ---
@@ -103,30 +139,29 @@ function renderTable() {
             <td>${p.pcs}</td>
             <td>Rp ${p.harga.toLocaleString('id-ID')}</td>
             <td>Rp ${p.total.toLocaleString('id-ID')}</td>
-            <td>${p.tanggalDp}</td>
+            <td>${p.tanggalDp || '-'}</td>
             <td>Rp ${p.dp.toLocaleString('id-ID')}</td>
             <td>${p.jenisPembayaranDp}</td>
-            <td>${p.tanggalPelunasan}</td>
+            <td>${p.tanggalPelunasan || '-'}</td>
             <td>Rp ${p.pelunasan.toLocaleString('id-ID')}</td>
             <td>${p.jenisPembayaranPelunasan}</td>
             <td>${textSisa}</td>
             <td>${p.pengerjaan}</td>
             <td>${p.penjahit}</td>
             <td>
-                <button class="btn-edit" onclick="editData(${index})">Edit</button>
-                <button class="btn-delete" onclick="deleteData(${index})">Hapus</button>
+                <button class="btn-edit" onclick="editData('${p.id}')">Edit</button>
+                <button class="btn-delete" onclick="deleteData('${p.id}')">Hapus</button>
             </td>
         `;
         tableBody.appendChild(tr);
     });
 }
 
-// --- FITUR EDIT & HAPUS (Dipanggil dari tombol di tabel) ---
-window.editData = function(index) {
-    const p = dataPesanan[index];
-    editIndex = index; // Set penanda bahwa kita sedang mengedit baris ini
+// --- FITUR EDIT & HAPUS ---
+window.editData = function(id) {
+    const p = dataPesanan.find(item => item.id === id);
+    editId = id;
 
-    // Masukkan data lama ke form
     document.getElementById('inputTanggal').value = p.tanggal;
     document.getElementById('inputNama').value = p.nama;
     document.getElementById('inputJenisOrder').value = p.jenisOrder;
@@ -144,52 +179,21 @@ window.editData = function(index) {
     document.getElementById('inputPengerjaan').value = p.pengerjaan;
     document.getElementById('inputPenjahit').value = p.penjahit;
 
-    // Ubah tampilan tombol agar jelas ini mode edit
     btnAddOrder.innerText = "💾 Simpan Perubahan (Edit)";
     btnAddOrder.style.backgroundColor = "#ffc107";
-    
-    // Panggil kalkulasi live untuk memperbarui tampilan readonly
     calculateLive();
 };
 
-window.deleteData = function(index) {
-    if (confirm("Apakah Anda yakin ingin menghapus pesanan ini?")) {
-        dataPesanan.splice(index, 1); // Hapus 1 data dari array
-        renderTable();
+window.deleteData = async function(id) {
+    if (confirm("Apakah Anda yakin ingin menghapus pesanan ini dari Database Server?")) {
+        try {
+            await deleteDoc(doc(db, "pesanan", id));
+        } catch (error) {
+            console.error("Gagal menghapus:", error);
+            alert("Gagal menghapus data!");
+        }
     }
 };
-
-// --- FITUR BUKA & SIMPAN FILE JSON ---
-const btnSave = document.getElementById('btnSave');
-btnSave.addEventListener('click', () => {
-    if (dataPesanan.length === 0) return alert("Belum ada data!");
-    const dataString = JSON.stringify(dataPesanan, null, 2);
-    const blob = new Blob([dataString], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Data_Konveksi_${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-});
-
-const fileInput = document.getElementById('fileInput');
-fileInput.addEventListener('change', (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        try {
-            dataPesanan = JSON.parse(e.target.result);
-            renderTable();
-            alert("Data berhasil dimuat!");
-        } catch (error) {
-            alert("Format file salah!");
-        }
-    };
-    reader.readAsText(file);
-    fileInput.value = ''; 
-});
 
 // --- FITUR CETAK PDF ---
 const btnPdf = document.getElementById('btnPdf');
@@ -208,8 +212,8 @@ btnPdf.addEventListener('click', () => {
         index + 1, p.nama, p.jenisOrder, 
         `${p.bahan}\n${p.kerah}/${p.cutting}`, 
         p.pcs, p.harga, p.total,
-        p.tanggalDp, p.dp, 
-        p.tanggalPelunasan, p.pelunasan, 
+        p.tanggalDp || '-', p.dp, 
+        p.tanggalPelunasan || '-', p.pelunasan, 
         p.sisaTagihan <= 0 ? "LUNAS" : p.sisaTagihan, 
         p.pengerjaan, p.penjahit
     ]);
@@ -220,7 +224,7 @@ btnPdf.addEventListener('click', () => {
         body: dataTabel,
         theme: 'grid',
         headStyles: { fillColor: [0, 123, 255] },
-        styles: { fontSize: 7, cellPadding: 1 }, // Diperkecil agar banyak kolom muat di PDF
+        styles: { fontSize: 7, cellPadding: 1 }, 
     });
 
     doc.save(judul.replace(/\s+/g, '_') + '.pdf');
