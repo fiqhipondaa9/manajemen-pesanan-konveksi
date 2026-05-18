@@ -26,88 +26,126 @@
 </div>
 
 <div id="appContainer" class="hidden">
-    <div class="container">
-        <div class="header-app">
-            <img id="logoApparel" src="PASTE_KODE_BASE64_ANDA_DI_SINI" alt="Logo" style="height: 50px; width: 50px; background-color: #ccc; border-radius: 5px; object-fit: cover;">
-            <div style="flex-grow: 1;">
-                <h2>Manajemen NN Apparel</h2>
-                <span style="font-size: 12px; color: green; font-weight: bold;">🟢 Online (Firebase)</span>
-            </div>
-            <div style="text-align: right;">
-                <span style="font-size: 12px; font-weight: bold;" id="userInfo"></span><br>
-                <button id="btnLogout" style="background-color: #dc3545; padding: 5px 10px; font-size: 11px; margin-top: 5px;">Keluar</button>
-            </div>
+    
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <img id="logoApparel" src="PASTE_KODE_BASE64_ANDA_DI_SINI" alt="Logo">
+            <h2>NN Apparel</h2>
+            <span id="userInfo" class="user-badge"></span>
+            <div style="font-size: 10px; color: #a4b0be; margin-top: 5px;">🟢 Online (Firebase)</div>
         </div>
+        <ul class="nav-links">
+            <li onclick="switchView('dashboard')" id="nav-dashboard" class="active">📊 Dashboard</li>
+            <li onclick="switchView('input')" id="nav-input">📝 Input Pesanan</li>
+            <li onclick="switchView('data')" id="nav-data">🗂️ Data Pesanan</li>
+        </ul>
+        <button id="btnLogout" class="btn-logout">🚪 Keluar Sistem</button>
+    </nav>
 
-        <div class="action-bar">
-            <button class="btn-pdf" id="btnPdf">📄 Download PDF Laporan</button>
-            <div class="filter-box">
-                <label for="filterBulan">Filter Data:</label>
-                <input type="month" id="filterBulan">
-                <button id="btnResetFilter" style="background-color: #6c757d; padding: 8px;">Reset</button>
-            </div>
-        </div>
-
-        <div class="form-grid">
-            <div class="form-group"><label>Tanggal Order</label><input type="date" id="inputTanggal"></div>
-            <div class="form-group"><label>Nama Pelanggan</label><input type="text" id="inputNama" placeholder="Nama lengkap"></div>
-            <div class="form-group"><label>Jenis Order</label>
-                <select id="inputJenisOrder"><option value="">- Pilih -</option><option value="TRAINING">TRAINING</option><option value="ONE SET POLOS BOLA">ONE SET POLOS BOLA</option><option value="ONE SET FULL PRINT BOLA">ONE SET FULL PRINT BOLA</option><option value="ONE SET POLOS BASKET">ONE SET POLOS BASKET</option><option value="ONE SET FULL PRINT BASKET">ONE SET FULL PRINT BASKET</option><option value="ATASAN LENGAN PENDEK">ATASAN LENGAN PENDEK</option><option value="ATASAN LENGAN PANJANG">ATASAN LENGAN PANJANG</option><option value="JAKET">JAKET</option><option value="HOODY MANCING">HOODY MANCING</option></select>
-            </div>
-            <div class="form-group"><label>Bahan</label>
-                <select id="inputBahan"><option value="">- Pilih -</option><option value="MILANO">MILANO</option><option value="PUMA">PUMA</option><option value="SCUBA">SCUBA</option><option value="EMBOSH GARIS">EMBOSH GARIS</option><option value="EMBOSH GELOMBANG">EMBOSH GELOMBANG</option><option value="COTTON">COTTON</option></select>
-            </div>
-            <div class="form-group"><label>Kerah</label>
-                <select id="inputKerah"><option value="">- Pilih -</option><option value="WANGKY">WANGKY</option><option value="V-WANGKY">V-WANGKY</option><option value="V-NECK">V-NECK</option><option value="CUT V-NECK">CUT V-NECK</option><option value="V-SILANG">V-SILANG</option><option value="O-NECK">O-NECK</option><option value="SHANGHAI">SHANGHAI</option></select>
-            </div>
-            <div class="form-group"><label>Jenis Cutting</label>
-                <select id="inputCutting"><option value="">- Pilih -</option><option value="OVAL">OVAL</option><option value="LURUS">LURUS</option><option value="BELAH SAMPING">BELAH SAMPING</option><option value="TUNIK">TUNIK</option></select>
-            </div>
-            <div class="form-group"><label>Jumlah (PCS)</label><input type="number" id="inputPcs" placeholder="0"></div>
-            <div class="form-group"><label>Harga Satuan (Rp)</label><input type="number" id="inputHarga" placeholder="0"></div>
-            <div class="form-group"><label>Total Harga (Rp)</label><input type="text" id="inputTotal" class="readonly-input" readonly placeholder="0"></div>
-            <div class="form-group"><label>Foto Barang (Opsional)</label><input type="file" id="inputFoto" accept="image/*" style="border: 1px solid #28a745;"></div>
-            <div class="form-group"><label>Estimasi Selesai (Deadline)</label><input type="date" id="inputEstimasi" style="border: 1px solid #17a2b8;"></div>
-            <div class="form-group"><label>Tanggal DP</label><input type="date" id="inputTanggalDp"></div>
-            <div class="form-group"><label>DP / Uang Muka (Rp)</label><input type="number" id="inputDp" placeholder="0"></div>
-            <div class="form-group"><label>Jenis Bayar DP</label>
-                <select id="inputJenisPembayaranDp"><option value="-">-</option><option value="CASH">CASH</option><option value="TRANSFER">TRANSFER</option><option value="QRIS">QRIS</option></select>
-            </div>
-            <div class="form-group"><label>Tanggal Pelunasan</label><input type="date" id="inputTanggalPelunasan"></div>
-            <div class="form-group"><label>Pelunasan (Rp)</label><input type="number" id="inputPelunasan" placeholder="0"></div>
-            <div class="form-group"><label>Jenis Bayar Pelunasan</label>
-                <select id="inputJenisPembayaranPelunasan"><option value="-">-</option><option value="CASH">CASH</option><option value="TRANSFER">TRANSFER</option><option value="QRIS">QRIS</option></select>
-            </div>
-            <div class="form-group"><label>Sisa Tagihan (Rp)</label><input type="text" id="inputSisa" class="readonly-input" readonly placeholder="0"></div>
-            <div class="form-group"><label>Status Pengerjaan</label>
-                <select id="inputPengerjaan">
-                    <option value="Design">Design</option><option value="Print/Cetak">Print/Cetak</option>
-                    <option value="Press">Press</option><option value="Jahit">Jahit</option>
-                    <option value="Packing">Packing</option><option value="Selesai">Selesai</option>
-                </select>
-            </div>
-            <div class="form-group"><label>Penjahit</label>
-                <select id="inputPenjahit"><option value="">- Pilih -</option><option value="AYAT">AYAT</option><option value="ATIN">ATIN</option></select>
-            </div>
-        </div>
+    <main class="main-content">
         
-        <button class="btn-add" id="btnAddOrder">+ Simpan Pesanan ke Server</button>
+        <section id="viewDashboard" class="view-section active">
+            <h2 style="margin-top: 0; color: #2c3e50;">Ringkasan Bisnis</h2>
+            <p style="color: #7f8c8d; margin-top: -10px; margin-bottom: 25px;">Pantau performa konveksi Anda secara real-time.</p>
+            
+            <div class="cards-grid">
+                <div class="card card-blue">
+                    <h3>Pakaian Dipesan</h3>
+                    <p id="cardPcs">0 PCS</p>
+                </div>
+                <div class="card card-yellow">
+                    <h3>Antrean Dikerjakan</h3>
+                    <p id="cardProses">0 Item</p>
+                </div>
+                <div class="card card-green" id="cardOmzetWrapper">
+                    <h3>Total Omzet (Kotor)</h3>
+                    <p id="cardOmzet">Rp 0</p>
+                </div>
+                <div class="card card-red" id="cardPiutangWrapper">
+                    <h3>Sisa Piutang (Belum Lunas)</h3>
+                    <p id="cardPiutang">Rp 0</p>
+                </div>
+            </div>
+        </section>
 
-        <div class="table-wrapper">
-            <table id="dataTable">
-                <thead>
-                    <tr>
-                        <th>NO</th><th>ID NOTA</th><th>FOTO</th><th>NAMA</th><th>ORDER</th><th>DETAIL</th>
-                        <th>PCS</th><th>HARGA</th><th>TOTAL</th>
-                        <th>DP</th><th>PELUNASAN</th><th>SISA</th>
-                        <th>ESTIMASI</th><th>STATUS</th><th>PENJAHIT</th><th>AKSI</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-                <tfoot id="tableFooter"></tfoot>
-            </table>
-        </div>
-    </div>
+        <section id="viewInput" class="view-section hidden">
+            <h2 style="margin-top: 0; color: #2c3e50;">Formulir Pesanan Baru</h2>
+            <div class="container">
+                <div class="form-grid">
+                    <div class="form-group"><label>Tanggal Order</label><input type="date" id="inputTanggal"></div>
+                    <div class="form-group"><label>Nama Pelanggan</label><input type="text" id="inputNama" placeholder="Nama lengkap"></div>
+                    <div class="form-group"><label>Jenis Order</label>
+                        <select id="inputJenisOrder"><option value="">- Pilih -</option><option value="TRAINING">TRAINING</option><option value="ONE SET POLOS BOLA">ONE SET POLOS BOLA</option><option value="ONE SET FULL PRINT BOLA">ONE SET FULL PRINT BOLA</option><option value="ONE SET POLOS BASKET">ONE SET POLOS BASKET</option><option value="ONE SET FULL PRINT BASKET">ONE SET FULL PRINT BASKET</option><option value="ATASAN LENGAN PENDEK">ATASAN LENGAN PENDEK</option><option value="ATASAN LENGAN PANJANG">ATASAN LENGAN PANJANG</option><option value="JAKET">JAKET</option><option value="HOODY MANCING">HOODY MANCING</option></select>
+                    </div>
+                    <div class="form-group"><label>Bahan</label>
+                        <select id="inputBahan"><option value="">- Pilih -</option><option value="MILANO">MILANO</option><option value="PUMA">PUMA</option><option value="SCUBA">SCUBA</option><option value="EMBOSH GARIS">EMBOSH GARIS</option><option value="EMBOSH GELOMBANG">EMBOSH GELOMBANG</option><option value="COTTON">COTTON</option></select>
+                    </div>
+                    <div class="form-group"><label>Kerah</label>
+                        <select id="inputKerah"><option value="">- Pilih -</option><option value="WANGKY">WANGKY</option><option value="V-WANGKY">V-WANGKY</option><option value="V-NECK">V-NECK</option><option value="CUT V-NECK">CUT V-NECK</option><option value="V-SILANG">V-SILANG</option><option value="O-NECK">O-NECK</option><option value="SHANGHAI">SHANGHAI</option></select>
+                    </div>
+                    <div class="form-group"><label>Jenis Cutting</label>
+                        <select id="inputCutting"><option value="">- Pilih -</option><option value="OVAL">OVAL</option><option value="LURUS">LURUS</option><option value="BELAH SAMPING">BELAH SAMPING</option><option value="TUNIK">TUNIK</option></select>
+                    </div>
+                    <div class="form-group"><label>Jumlah (PCS)</label><input type="number" id="inputPcs" placeholder="0"></div>
+                    <div class="form-group"><label>Harga Satuan (Rp)</label><input type="number" id="inputHarga" placeholder="0"></div>
+                    <div class="form-group"><label>Total Harga (Rp)</label><input type="text" id="inputTotal" class="readonly-input" readonly placeholder="0"></div>
+                    <div class="form-group"><label>Foto Barang (Opsional)</label><input type="file" id="inputFoto" accept="image/*" style="border: 1px solid #28a745;"></div>
+                    <div class="form-group"><label>Estimasi Selesai</label><input type="date" id="inputEstimasi" style="border: 1px solid #17a2b8;"></div>
+                    <div class="form-group"><label>Tanggal DP</label><input type="date" id="inputTanggalDp"></div>
+                    <div class="form-group"><label>DP / Uang Muka (Rp)</label><input type="number" id="inputDp" placeholder="0"></div>
+                    <div class="form-group"><label>Jenis Bayar DP</label>
+                        <select id="inputJenisPembayaranDp"><option value="-">-</option><option value="CASH">CASH</option><option value="TRANSFER">TRANSFER</option><option value="QRIS">QRIS</option></select>
+                    </div>
+                    <div class="form-group"><label>Tanggal Pelunasan</label><input type="date" id="inputTanggalPelunasan"></div>
+                    <div class="form-group"><label>Pelunasan (Rp)</label><input type="number" id="inputPelunasan" placeholder="0"></div>
+                    <div class="form-group"><label>Jenis Bayar Pelunasan</label>
+                        <select id="inputJenisPembayaranPelunasan"><option value="-">-</option><option value="CASH">CASH</option><option value="TRANSFER">TRANSFER</option><option value="QRIS">QRIS</option></select>
+                    </div>
+                    <div class="form-group"><label>Sisa Tagihan (Rp)</label><input type="text" id="inputSisa" class="readonly-input" readonly placeholder="0"></div>
+                    <div class="form-group"><label>Status Pengerjaan</label>
+                        <select id="inputPengerjaan">
+                            <option value="Design">Design</option><option value="Print/Cetak">Print/Cetak</option>
+                            <option value="Press">Press</option><option value="Jahit">Jahit</option>
+                            <option value="Packing">Packing</option><option value="Selesai">Selesai</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Penjahit</label>
+                        <select id="inputPenjahit"><option value="">- Pilih -</option><option value="AYAT">AYAT</option><option value="ATIN">ATIN</option></select>
+                    </div>
+                </div>
+                <button class="btn-add" id="btnAddOrder">💾 Simpan Pesanan ke Server</button>
+            </div>
+        </section>
+
+        <section id="viewData" class="view-section hidden">
+            <h2 style="margin-top: 0; color: #2c3e50;">Pangkalan Data Pesanan</h2>
+            <div class="container">
+                <div class="action-bar">
+                    <button class="btn-pdf" id="btnPdf">📄 Download PDF Laporan</button>
+                    <div class="filter-box">
+                        <label for="filterBulan">Filter Data:</label>
+                        <input type="month" id="filterBulan">
+                        <button id="btnResetFilter" style="background-color: #6c757d; padding: 8px;">Reset</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>NO</th><th>ID NOTA</th><th>FOTO</th><th>NAMA</th><th>ORDER</th><th>DETAIL</th>
+                                <th>PCS</th><th>HARGA</th><th>TOTAL</th>
+                                <th>DP</th><th>PELUNASAN</th><th>SISA</th>
+                                <th>ESTIMASI</th><th>STATUS</th><th>PENJAHIT</th><th>AKSI</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                        <tfoot id="tableFooter"></tfoot>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
 </div>
 
 <script type="module" src="/src/main.js"></script>

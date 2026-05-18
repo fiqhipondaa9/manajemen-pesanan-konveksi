@@ -1,49 +1,91 @@
-body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
-.container { background-color: #ffffff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-.header-app { display: flex; align-items: center; gap: 15px; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 20px; }
-.header-app h2 { margin: 0; color: #333; }
+/* PENGATURAN DASAR HALAMAN */
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background-color: #f4f7f6; 
+    margin: 0; 
+    height: 100vh; /* Layar dikunci ukurannya */
+    overflow: hidden; /* Mencegah scroll ganda */
+}
 
-.action-bar { display: flex; gap: 10px; margin-bottom: 25px; background-color: #e9ecef; padding: 15px; border-radius: 5px; align-items: center;}
+/* LAYOUT UTAMA (FLEXBOX) */
+#appContainer { display: flex; width: 100%; height: 100%; }
+
+/* --- SIDEBAR (BILAH KIRI) --- */
+.sidebar {
+    width: 260px;
+    background-color: #2c3e50;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+    z-index: 10;
+}
+.sidebar-header { padding: 25px 20px; text-align: center; border-bottom: 1px solid #34495e; }
+.sidebar-header img { width: 70px; height: 70px; border-radius: 12px; object-fit: cover; background: white; padding: 2px; margin-bottom: 15px;}
+.sidebar-header h2 { margin: 0; font-size: 20px; letter-spacing: 1px;}
+.user-badge { font-size: 11px; background: #27ae60; padding: 4px 10px; border-radius: 12px; display: inline-block; margin-top: 10px; font-weight: bold;}
+
+.nav-links { list-style: none; padding: 0; margin: 20px 0; flex-grow: 1; }
+.nav-links li { padding: 15px 25px; cursor: pointer; border-left: 4px solid transparent; transition: all 0.3s ease; font-size: 15px; color: #bdc3c7;}
+.nav-links li:hover { background-color: #34495e; color: white;}
+.nav-links li.active { background-color: #34495e; border-left-color: #3498db; color: white; font-weight: bold; }
+
+.btn-logout { background-color: #c0392b; color: white; border: none; padding: 18px; cursor: pointer; font-weight: bold; width: 100%; text-align: left; padding-left: 25px; transition: 0.3s; font-size: 14px;}
+.btn-logout:hover { background-color: #e74c3c; }
+
+/* --- KONTEN UTAMA (KANAN) --- */
+.main-content { flex-grow: 1; padding: 30px; overflow-y: auto; background-color: #f4f7f6; }
+.view-section { display: none; animation: fadeIn 0.4s ease; }
+.view-section.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* --- KARTU DASHBOARD --- */
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+.card { padding: 25px; border-radius: 10px; color: white; box-shadow: 0 5px 15px rgba(0,0,0,0.15); transition: transform 0.3s; }
+.card:hover { transform: translateY(-5px); }
+.card h3 { margin: 0 0 10px 0; font-size: 14px; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px;}
+.card p { margin: 0; font-size: 28px; font-weight: bold; }
+.card-blue { background: linear-gradient(135deg, #3498db, #2980b9); }
+.card-yellow { background: linear-gradient(135deg, #f1c40f, #f39c12); }
+.card-green { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+.card-red { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+
+/* --- DESAIN CONTAINER FORM & TABEL --- */
+.container { background-color: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+.action-bar { display: flex; gap: 10px; margin-bottom: 20px; background-color: #f8f9fa; padding: 15px; border-radius: 8px; align-items: center;}
 .filter-box { display: flex; gap: 10px; align-items: center; margin-left: auto; font-weight: bold; font-size: 14px;}
-button { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; }
+button { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s;}
 .btn-pdf { background-color: #dc3545; }  
-.btn-add { background-color: #007bff; margin-top: 15px; width: 100%; font-size: 16px; padding: 12px;} 
-.btn-edit { background-color: #ffc107; color: black; padding: 5px 10px; margin-right: 5px; font-size: 11px;}
-.btn-delete { background-color: #dc3545; padding: 5px 10px; font-size: 11px;}
+.btn-pdf:hover { background-color: #c82333; }
+.btn-add { background-color: #007bff; margin-top: 20px; width: 100%; font-size: 16px; padding: 15px; border-radius: 8px;} 
+.btn-add:hover { background-color: #0069d9; }
+.btn-edit { background-color: #ffc107; color: black; padding: 6px 12px; margin-right: 5px; font-size: 11px; border-radius: 4px;}
+.btn-delete { background-color: #dc3545; padding: 6px 12px; font-size: 11px; border-radius: 4px;}
 
-.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; }
 .form-group { display: flex; flex-direction: column; }
-label { font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #555; }
-input, select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+label { font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #495057; }
+input, select { padding: 10px; border: 1px solid #ced4da; border-radius: 6px; outline: none; transition: 0.3s;}
+input:focus, select:focus { border-color: #80bdff; box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25); }
 .readonly-input { background-color: #e9ecef; font-weight: bold; cursor: not-allowed; }
 
-.table-wrapper { overflow-x: auto; margin-top: 30px; }
-table { width: 100%; border-collapse: collapse; min-width: 1500px; font-size: 11px;}
-th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: middle;}
-th { background-color: #007bff; color: white; }
-tfoot { background-color: #e9ecef; font-weight: bold; font-size: 13px; }
+.table-wrapper { overflow-x: auto; border: 1px solid #dee2e6; border-radius: 8px;}
+table { width: 100%; border-collapse: collapse; min-width: 1500px; font-size: 12px;}
+th, td { border-bottom: 1px solid #dee2e6; border-right: 1px solid #dee2e6; padding: 10px 8px; text-align: left; vertical-align: middle;}
+th { background-color: #f8f9fa; color: #495057; font-weight: bold; border-bottom: 2px solid #dee2e6;}
+tfoot { background-color: #f1f3f5; font-weight: bold; font-size: 13px; }
 
-/* Indikator Warna Status Pengerjaan */
+/* Status & Estimasi */
 .status-badge { padding: 5px; border-radius: 4px; display: block; text-align: center; font-weight: bold;}
 .status-merah { background-color: #f8d7da; color: #721c24; }
 .status-kuning { background-color: #fff3cd; color: #856404; }
 .status-hijau { background-color: #d4edda; color: #155724; }
+.estimasi-aman { color: #28a745; font-weight: bold;}
+.estimasi-dekat { color: #fd7e14; font-weight: bold;}
+.estimasi-telat { color: white; font-weight: bold; background-color: #dc3545; padding: 3px 6px; border-radius: 4px;}
 
-/* Peringatan Estimasi Waktu */
-.estimasi-aman { color: green; }
-.estimasi-dekat { color: orange; font-weight: bold;}
-.estimasi-telat { color: red; font-weight: bold; background-color: #ffe6e6; padding: 2px 5px; border-radius: 3px;}
-
-/* --- TAMPILAN HALAMAN LOGIN --- */
-.login-overlay { 
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background-color: rgba(0,0,0,0.8); 
-    display: flex; justify-content: center; align-items: center; 
-    z-index: 1000; 
-}
-.login-box { 
-    background-color: white; padding: 30px; border-radius: 8px; 
-    width: 320px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
-}
-.login-box h2 { text-align: center; border-bottom: none; color: #007bff; margin-top: 0;}
+/* LOGIN OVERLAY */
+.login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(44, 62, 80, 0.95); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+.login-box { background-color: white; padding: 40px 30px; border-radius: 12px; width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.login-box h2 { text-align: center; color: #2c3e50; margin-top: 0; margin-bottom: 25px;}
 .hidden { display: none !important; }

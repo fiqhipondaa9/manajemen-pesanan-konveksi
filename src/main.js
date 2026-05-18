@@ -23,10 +23,23 @@ let dataPesanan = [];
 let editId = null; 
 let fotoUrlLama = ""; 
 let filterBulanValue = "";
-
-// --- VARIABEL LOGIN ---
-let currentUserRole = ""; // Akan berisi 'superadmin' atau 'admin'
+let currentUserRole = ""; 
 let currentUsername = "";
+
+// --- FUNGSI NAVIGASI TAB MENU ---
+window.switchView = function(viewId) {
+    // 1. Ubah warna tombol navigasi yang aktif
+    document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+    document.getElementById('nav-' + viewId).classList.add('active');
+
+    // 2. Sembunyikan semua halaman, tampilkan yang dipilih
+    document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+    document.querySelectorAll('.view-section').forEach(sec => sec.classList.add('hidden'));
+    
+    const targetSection = document.getElementById('view' + viewId.charAt(0).toUpperCase() + viewId.slice(1));
+    targetSection.classList.remove('hidden');
+    targetSection.classList.add('active');
+};
 
 // --- LOGIKA LOGIN & LOGOUT ---
 document.getElementById('btnLogin').addEventListener('click', () => {
@@ -47,17 +60,16 @@ document.getElementById('btnLogin').addEventListener('click', () => {
         return;
     }
 
-    // Jika berhasil login, sembunyikan overlay, tampilkan aplikasi
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('appContainer').classList.remove('hidden');
-    document.getElementById('userInfo').innerText = `👤 Login sebagai: ${currentUsername}`;
+    document.getElementById('userInfo').innerText = `👤 ${currentUsername}`;
     
-    // Render ulang tabel untuk menerapkan batasan hak akses
+    // Kembalikan view ke dashboard saat baru login
+    switchView('dashboard');
     renderTable();
 });
 
 document.getElementById('btnLogout').addEventListener('click', () => {
-    // Reset dan kembali ke layar login
     currentUserRole = "";
     document.getElementById('loginUser').value = '';
     document.getElementById('loginPass').value = '';
@@ -113,7 +125,7 @@ document.getElementById('btnResetFilter').addEventListener('click', () => { docu
 onSnapshot(q, (snapshot) => {
     dataPesanan = [];
     snapshot.forEach((doc) => { dataPesanan.push({ id: doc.id, ...doc.data() }); });
-    if (currentUserRole !== "") renderTable(); // Render hanya jika sudah login
+    if (currentUserRole !== "") renderTable(); 
 });
 
 // --- SIMPAN / EDIT KE FIREBASE ---
@@ -177,10 +189,11 @@ btnAddOrder.addEventListener('click', async () => {
             await addDoc(pesananRef, pesanan);
         }
         clearForm();
+        alert("Data berhasil disimpan!");
     } catch (error) {
         alert("Gagal menyimpan ke server!");
     } finally {
-        btnAddOrder.innerText = "+ Simpan Pesanan ke Server";
+        btnAddOrder.innerText = "💾 Simpan Pesanan ke Server";
     }
 });
 
@@ -191,7 +204,7 @@ function clearForm() {
     calculateLive();
 }
 
-// --- FUNGSI MENGGAMBAR TABEL ---
+// --- FUNGSI MENGGAMBAR TABEL & MENGHITUNG KARTU DASHBOARD ---
 function renderTable() {
     const tableBody = document.getElementById('tableBody');
     const tableFooter = document.getElementById('tableFooter');
@@ -203,6 +216,7 @@ function renderTable() {
     }
 
     let totalPcs = 0, totalHargaSemua = 0, totalDpSemua = 0, totalPelunasanSemua = 0, totalSisaSemua = 0;
+    let countProses = 0;
     let hariIni = new Date();
     hariIni.setHours(0,0,0,0); 
 
@@ -210,6 +224,9 @@ function renderTable() {
         let warnaStatus = "status-kuning";
         if (p.pengerjaan === "Design" || p.pengerjaan === "Print/Cetak") warnaStatus = "status-merah";
         if (p.pengerjaan === "Selesai") warnaStatus = "status-hijau";
+        
+        // Hitung antrean jika belum selesai
+        if (p.pengerjaan !== "Selesai") countProses++;
 
         let teksEstimasi = p.estimasi || '-';
         let kelasEstimasi = "";
@@ -232,7 +249,6 @@ function renderTable() {
 
         // LOGIKA TOMBOL HAK AKSES
         let tombolAksi = `<button class="btn-edit" onclick="editData('${p.id}')">Edit</button>`;
-        // Tombol Hapus hanya muncul untuk superadmin
         if (currentUserRole === 'superadmin') {
             tombolAksi += `<button class="btn-delete" onclick="deleteData('${p.id}')">Hapus</button>`;
         }
@@ -259,8 +275,16 @@ function renderTable() {
         tableBody.appendChild(tr);
     });
 
+    // UPDATE ANGKA PADA KARTU DASHBOARD
+    document.getElementById('cardPcs').innerText = totalPcs.toLocaleString('id-ID') + " PCS";
+    document.getElementById('cardProses').innerText = countProses + " Item";
+    document.getElementById('cardOmzet').innerText = "Rp " + totalHargaSemua.toLocaleString('id-ID');
+    document.getElementById('cardPiutang').innerText = "Rp " + totalSisaSemua.toLocaleString('id-ID');
+
     // LOGIKA TAMPILAN REKAP UANG HAK AKSES
     if (currentUserRole === 'superadmin') {
+        document.getElementById('cardOmzetWrapper').classList.remove('hidden');
+        document.getElementById('cardPiutangWrapper').classList.remove('hidden');
         tableFooter.innerHTML = `
             <tr>
                 <td colspan="6" style="text-align: right; color: #007bff;"><strong>TOTAL REKAPITULASI DATA:</strong></td>
@@ -274,7 +298,8 @@ function renderTable() {
             </tr>
         `;
     } else {
-        // Jika Admin, baris total uang tidak ditampilkan
+        document.getElementById('cardOmzetWrapper').classList.add('hidden');
+        document.getElementById('cardPiutangWrapper').classList.add('hidden');
         tableFooter.innerHTML = ``;
     }
 }
@@ -304,7 +329,9 @@ window.editData = function(id) {
 
     btnAddOrder.innerText = "💾 Simpan Perubahan (Edit)";
     btnAddOrder.style.backgroundColor = "#ffc107";
-    window.scrollTo(0, 0); 
+    
+    // Pindahkan layar otomatis ke Tab Input
+    switchView('input');
     calculateLive();
 };
 
