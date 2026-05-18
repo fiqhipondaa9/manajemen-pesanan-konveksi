@@ -22,17 +22,17 @@ const q = query(pesananRef, orderBy("createdAt", "asc"));
 let dataPesanan = [];
 let editId = null; 
 let fotoUrlLama = ""; 
+let cabangLama = ""; 
 let filterBulanValue = "";
+let filterCabangValue = ""; // Variabel filter baru
 let currentUserRole = ""; 
 let currentUsername = "";
+let currentUserCabang = ""; 
 
 // --- FUNGSI NAVIGASI TAB MENU ---
 window.switchView = function(viewId) {
-    // 1. Ubah warna tombol navigasi yang aktif
     document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
     document.getElementById('nav-' + viewId).classList.add('active');
-
-    // 2. Sembunyikan semua halaman, tampilkan yang dipilih
     document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
     document.querySelectorAll('.view-section').forEach(sec => sec.classList.add('hidden'));
     
@@ -49,12 +49,15 @@ document.getElementById('btnLogin').addEventListener('click', () => {
     if (user === "superadmin" && pass === "super123") {
         currentUserRole = "superadmin";
         currentUsername = "Super Admin";
+        currentUserCabang = "Pusat";
     } else if (user === "admin1" && pass === "admin123") {
         currentUserRole = "admin";
-        currentUsername = "Admin 1";
+        currentUsername = "Admin Toko 1";
+        currentUserCabang = "Toko 1";
     } else if (user === "admin2" && pass === "admin123") {
         currentUserRole = "admin";
-        currentUsername = "Admin 2";
+        currentUsername = "Admin Toko 2";
+        currentUserCabang = "Toko 2";
     } else {
         alert("Username atau Password salah!");
         return;
@@ -64,13 +67,13 @@ document.getElementById('btnLogin').addEventListener('click', () => {
     document.getElementById('appContainer').classList.remove('hidden');
     document.getElementById('userInfo').innerText = `👤 ${currentUsername}`;
     
-    // Kembalikan view ke dashboard saat baru login
     switchView('dashboard');
     renderTable();
 });
 
 document.getElementById('btnLogout').addEventListener('click', () => {
     currentUserRole = "";
+    currentUserCabang = "";
     document.getElementById('loginUser').value = '';
     document.getElementById('loginPass').value = '';
     document.getElementById('loginScreen').classList.remove('hidden');
@@ -117,9 +120,22 @@ const calculateLive = () => {
     document.getElementById(id).addEventListener('input', calculateLive);
 });
 
-// --- LISTENER FILTER ---
-document.getElementById('filterBulan').addEventListener('change', (e) => { filterBulanValue = e.target.value; renderTable(); });
-document.getElementById('btnResetFilter').addEventListener('click', () => { document.getElementById('filterBulan').value = ""; filterBulanValue = ""; renderTable(); });
+// --- LISTENER FILTER (BULAN & CABANG) ---
+document.getElementById('filterBulan').addEventListener('change', (e) => { 
+    filterBulanValue = e.target.value; 
+    renderTable(); 
+});
+document.getElementById('filterCabang').addEventListener('change', (e) => { 
+    filterCabangValue = e.target.value; 
+    renderTable(); 
+});
+document.getElementById('btnResetFilter').addEventListener('click', () => { 
+    document.getElementById('filterBulan').value = ""; 
+    document.getElementById('filterCabang').value = ""; 
+    filterBulanValue = ""; 
+    filterCabangValue = "";
+    renderTable(); 
+});
 
 // --- FIREBASE REAL-TIME ---
 onSnapshot(q, (snapshot) => {
@@ -158,7 +174,8 @@ btnAddOrder.addEventListener('click', async () => {
         jenisPembayaranPelunasan: document.getElementById('inputJenisPembayaranPelunasan').value,
         pengerjaan: document.getElementById('inputPengerjaan').value,
         penjahit: document.getElementById('inputPenjahit').value,
-        fotoUrl: fotoUrlLama 
+        fotoUrl: fotoUrlLama,
+        cabang: cabangLama || currentUserCabang
     };
 
     pesanan.total = pesanan.pcs * pesanan.harga;
@@ -183,6 +200,7 @@ btnAddOrder.addEventListener('click', async () => {
             await updateDoc(doc(db, "pesanan", editId), pesanan);
             editId = null;
             fotoUrlLama = "";
+            cabangLama = "";
             btnAddOrder.style.backgroundColor = "#007bff";
         } else {
             pesanan.createdAt = Date.now();
@@ -201,6 +219,7 @@ function clearForm() {
     document.querySelectorAll('input').forEach(input => { if(input.type !== 'month') input.value = ''; });
     document.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
     fotoUrlLama = "";
+    cabangLama = "";
     calculateLive();
 }
 
@@ -210,9 +229,13 @@ function renderTable() {
     const tableFooter = document.getElementById('tableFooter');
     tableBody.innerHTML = '';
     
+    // Logika Filter Ganda (Bulan & Cabang)
     let dataDitampilkan = dataPesanan;
     if (filterBulanValue !== "") {
-        dataDitampilkan = dataPesanan.filter(p => p.tanggal && p.tanggal.startsWith(filterBulanValue));
+        dataDitampilkan = dataDitampilkan.filter(p => p.tanggal && p.tanggal.startsWith(filterBulanValue));
+    }
+    if (filterCabangValue !== "") {
+        dataDitampilkan = dataDitampilkan.filter(p => (p.cabang || 'Pusat') === filterCabangValue);
     }
 
     let totalPcs = 0, totalHargaSemua = 0, totalDpSemua = 0, totalPelunasanSemua = 0, totalSisaSemua = 0;
@@ -225,7 +248,6 @@ function renderTable() {
         if (p.pengerjaan === "Design" || p.pengerjaan === "Print/Cetak") warnaStatus = "status-merah";
         if (p.pengerjaan === "Selesai") warnaStatus = "status-hijau";
         
-        // Hitung antrean jika belum selesai
         if (p.pengerjaan !== "Selesai") countProses++;
 
         let teksEstimasi = p.estimasi || '-';
@@ -240,6 +262,8 @@ function renderTable() {
 
         const textSisa = p.sisaTagihan <= 0 ? '<span style="color:green; font-weight:bold;">LUNAS</span>' : `Rp ${p.sisaTagihan.toLocaleString('id-ID')}`;
         const imgTag = p.fotoUrl ? `<a href="${p.fotoUrl}" target="_blank"><img src="${p.fotoUrl}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;"></a>` : '-';
+        
+        const cabangLabel = `<span style="background-color:#e1f5fe; color:#0288d1; padding:3px 6px; border-radius:4px; font-weight:bold;">${p.cabang || 'Pusat'}</span>`;
 
         totalPcs += p.pcs;
         totalHargaSemua += p.total;
@@ -247,7 +271,6 @@ function renderTable() {
         totalPelunasanSemua += p.pelunasan;
         totalSisaSemua += (p.sisaTagihan > 0 ? p.sisaTagihan : 0);
 
-        // LOGIKA TOMBOL HAK AKSES
         let tombolAksi = `<button class="btn-edit" onclick="editData('${p.id}')">Edit</button>`;
         if (currentUserRole === 'superadmin') {
             tombolAksi += `<button class="btn-delete" onclick="deleteData('${p.id}')">Hapus</button>`;
@@ -270,18 +293,17 @@ function renderTable() {
             <td class="${kelasEstimasi}">${teksEstimasi}</td>
             <td><span class="status-badge ${warnaStatus}">${p.pengerjaan}</span></td>
             <td>${p.penjahit}</td>
+            <td>${cabangLabel}</td>
             <td>${tombolAksi}</td>
         `;
         tableBody.appendChild(tr);
     });
 
-    // UPDATE ANGKA PADA KARTU DASHBOARD
     document.getElementById('cardPcs').innerText = totalPcs.toLocaleString('id-ID') + " PCS";
     document.getElementById('cardProses').innerText = countProses + " Item";
     document.getElementById('cardOmzet').innerText = "Rp " + totalHargaSemua.toLocaleString('id-ID');
     document.getElementById('cardPiutang').innerText = "Rp " + totalSisaSemua.toLocaleString('id-ID');
 
-    // LOGIKA TAMPILAN REKAP UANG HAK AKSES
     if (currentUserRole === 'superadmin') {
         document.getElementById('cardOmzetWrapper').classList.remove('hidden');
         document.getElementById('cardPiutangWrapper').classList.remove('hidden');
@@ -294,7 +316,7 @@ function renderTable() {
                 <td style="color: #28a745;"><strong>Rp ${totalDpSemua.toLocaleString('id-ID')}</strong></td>
                 <td style="color: #28a745;"><strong>Rp ${totalPelunasanSemua.toLocaleString('id-ID')}</strong></td>
                 <td style="color: #dc3545;"><strong>Rp ${totalSisaSemua.toLocaleString('id-ID')}</strong></td>
-                <td colspan="4"></td>
+                <td colspan="5"></td>
             </tr>
         `;
     } else {
@@ -309,6 +331,8 @@ window.editData = function(id) {
     const p = dataPesanan.find(item => item.id === id);
     editId = id;
     fotoUrlLama = p.fotoUrl || ""; 
+    cabangLama = p.cabang || ""; 
+
     document.getElementById('inputTanggal').value = p.tanggal;
     document.getElementById('inputNama').value = p.nama;
     document.getElementById('inputJenisOrder').value = p.jenisOrder;
@@ -330,7 +354,6 @@ window.editData = function(id) {
     btnAddOrder.innerText = "💾 Simpan Perubahan (Edit)";
     btnAddOrder.style.backgroundColor = "#ffc107";
     
-    // Pindahkan layar otomatis ke Tab Input
     switchView('input');
     calculateLive();
 };
@@ -341,11 +364,17 @@ window.deleteData = async function(id) {
     }
 };
 
-// Fitur PDF
+// Fitur PDF (Menggunakan data hasil filter ganda)
 const btnPdf = document.getElementById('btnPdf');
 btnPdf.addEventListener('click', () => {
     if (dataPesanan.length === 0) return alert("Belum ada data!");
-    const judul = prompt("Masukkan Judul Laporan:", "Laporan NN Apparel");
+    
+    // Sesuaikan judul PDF dengan filter yang aktif
+    let namaLaporan = "Laporan NN Apparel";
+    if (filterCabangValue !== "") namaLaporan += ` - ${filterCabangValue}`;
+    if (filterBulanValue !== "") namaLaporan += ` (${filterBulanValue})`;
+    
+    const judul = prompt("Masukkan Judul Laporan:", namaLaporan);
     if (!judul) return;
 
     const { jsPDF } = window.jspdf;
@@ -354,7 +383,10 @@ btnPdf.addEventListener('click', () => {
     
     let dataDitampilkan = dataPesanan;
     if (filterBulanValue !== "") {
-        dataDitampilkan = dataPesanan.filter(p => p.tanggal && p.tanggal.startsWith(filterBulanValue));
+        dataDitampilkan = dataDitampilkan.filter(p => p.tanggal && p.tanggal.startsWith(filterBulanValue));
+    }
+    if (filterCabangValue !== "") {
+        dataDitampilkan = dataDitampilkan.filter(p => (p.cabang || 'Pusat') === filterCabangValue);
     }
 
     const dataTabel = dataDitampilkan.map((p, index) => [
@@ -364,12 +396,12 @@ btnPdf.addEventListener('click', () => {
         p.tanggalDp || '-', p.dp, 
         p.tanggalPelunasan || '-', p.pelunasan, 
         p.sisaTagihan <= 0 ? "LUNAS" : p.sisaTagihan, 
-        p.estimasi || '-', p.pengerjaan, p.penjahit
+        p.estimasi || '-', p.pengerjaan, p.penjahit, p.cabang || 'Pusat'
     ]);
 
     doc.autoTable({
         startY: 20,
-        head: [['NO', 'ID NOTA', 'NAMA', 'ORDER', 'DETAIL', 'PCS', 'HRG', 'TOTAL', 'TGL DP', 'DP', 'TGL LNS', 'LUNAS', 'SISA', 'ESTIMASI', 'STATUS', 'PENJAHIT']],
+        head: [['NO', 'ID NOTA', 'NAMA', 'ORDER', 'DETAIL', 'PCS', 'HRG', 'TOTAL', 'TGL DP', 'DP', 'TGL LNS', 'LUNAS', 'SISA', 'ESTIMASI', 'STATUS', 'PENJAHIT', 'CABANG']],
         body: dataTabel, theme: 'grid', headStyles: { fillColor: [0, 123, 255] }, styles: { fontSize: 7, cellPadding: 1 }, 
     });
     doc.save(judul.replace(/\s+/g, '_') + '.pdf');

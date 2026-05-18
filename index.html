@@ -123,8 +123,17 @@
                 <div class="action-bar">
                     <button class="btn-pdf" id="btnPdf">📄 Download PDF Laporan</button>
                     <div class="filter-box">
-                        <label for="filterBulan">Filter Data:</label>
+                        <label for="filterBulan">Bulan:</label>
                         <input type="month" id="filterBulan">
+                        
+                        <label for="filterCabang" style="margin-left: 10px;">Cabang:</label>
+                        <select id="filterCabang">
+                            <option value="">Semua Cabang</option>
+                            <option value="Pusat">Pusat</option>
+                            <option value="Toko 1">Toko 1</option>
+                            <option value="Toko 2">Toko 2</option>
+                        </select>
+                        
                         <button id="btnResetFilter" style="background-color: #6c757d; padding: 8px;">Reset</button>
                     </div>
                 </div>
@@ -135,7 +144,7 @@
                                 <th>NO</th><th>ID NOTA</th><th>FOTO</th><th>NAMA</th><th>ORDER</th><th>DETAIL</th>
                                 <th>PCS</th><th>HARGA</th><th>TOTAL</th>
                                 <th>DP</th><th>PELUNASAN</th><th>SISA</th>
-                                <th>ESTIMASI</th><th>STATUS</th><th>PENJAHIT</th><th>AKSI</th>
+                                <th>ESTIMASI</th><th>STATUS</th><th>PENJAHIT</th><th>CABANG</th><th>AKSI</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody"></tbody>
