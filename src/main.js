@@ -99,9 +99,19 @@ onAuthStateChanged(auth, (user) => {
         let qFilter;
         if (currentUserRole === 'superadmin') {
             qFilter = query(pesananRef, orderBy("createdAt", "asc"));
+            
+            // Tampilkan dropdown filter cabang untuk superadmin
+            const lblCabang = document.querySelector('label[for="filterCabang"]');
+            if (lblCabang) lblCabang.style.display = 'inline-block';
+            document.getElementById('filterCabang').style.display = 'inline-block';
         } else {
             // Tanpa orderBy agar tidak mewajibkan pembuatan Composite Index di Firestore
             qFilter = query(pesananRef, where("cabang", "==", currentUserCabang));
+            
+            // Sembunyikan dropdown filter cabang untuk admin biasa
+            const lblCabang = document.querySelector('label[for="filterCabang"]');
+            if (lblCabang) lblCabang.style.display = 'none';
+            document.getElementById('filterCabang').style.display = 'none';
         }
 
         if (unsubscribeSnapshot) unsubscribeSnapshot(); // Hapus listener lama jika ada
