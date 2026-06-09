@@ -89,3 +89,81 @@ tfoot { background-color: #f1f3f5; font-weight: bold; font-size: 13px; }
 .login-box { background-color: white; padding: 40px 30px; border-radius: 12px; width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 .login-box h2 { text-align: center; color: #2c3e50; margin-top: 0; margin-bottom: 25px;}
 .hidden { display: none !important; }
+
+/* --- RESPONSIVE MOBILE --- */
+@media screen and (max-width: 768px) {
+    body {
+        overflow: auto;
+        height: auto;
+    }
+    #appContainer {
+        flex-direction: column;
+        height: auto;
+    }
+    .sidebar {
+        width: 100%;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .sidebar-header {
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        text-align: left;
+    }
+    .sidebar-header img {
+        margin-bottom: 0;
+        width: 50px;
+        height: 50px;
+    }
+    .nav-links {
+        display: flex;
+        overflow-x: auto;
+        margin: 0;
+        padding: 0;
+    }
+    .nav-links li {
+        white-space: nowrap;
+        border-left: none;
+        border-bottom: 4px solid transparent;
+        padding: 12px 15px;
+    }
+    .nav-links li.active {
+        border-bottom-color: #3498db;
+    }
+    .btn-logout {
+        text-align: center;
+        padding: 15px;
+        padding-left: 15px;
+    }
+    .main-content {
+        padding: 15px;
+        overflow-y: visible;
+    }
+    .cards-grid {
+        grid-template-columns: 1fr;
+    }
+    .action-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .filter-box {
+        flex-direction: column;
+        align-items: stretch;
+        margin-left: 0;
+        margin-top: 10px;
+    }
+    .filter-box label, .filter-box input, .filter-box select {
+        margin-left: 0 !important;
+        width: 100%;
+        margin-bottom: 5px;
+        box-sizing: border-box;
+    }
+    .btn-pdf {
+        width: 100%;
+    }
+    #btnResetFilter {
+        width: 100%;
+        margin-top: 5px;
+    }
+}

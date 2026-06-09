@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBBv2Xzyfrp5v5coy1nRoR4snvmxc4YK4g",
@@ -15,6 +16,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
+const auth = getAuth(app);
 
 const pesananRef = collection(db, "pesanan");
 const q = query(pesananRef, orderBy("createdAt", "asc"));
@@ -46,38 +48,64 @@ document.getElementById('btnLogin').addEventListener('click', () => {
     const user = document.getElementById('loginUser').value;
     const pass = document.getElementById('loginPass').value;
 
-    if (user === "superadmin" && pass === "super123") {
-        currentUserRole = "superadmin";
-        currentUsername = "Super Admin";
-        currentUserCabang = "Pusat";
-    } else if (user === "admin1" && pass === "admin123") {
-        currentUserRole = "admin";
-        currentUsername = "Admin Toko 1";
-        currentUserCabang = "Toko 1";
-    } else if (user === "admin2" && pass === "admin123") {
-        currentUserRole = "admin";
-        currentUsername = "Admin Toko 2";
-        currentUserCabang = "Toko 2";
-    } else {
-        alert("Username atau Password salah!");
+    if (!user || !pass) {
+        alert("Email dan password harus diisi!");
         return;
     }
 
-    document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('appContainer').classList.remove('hidden');
-    document.getElementById('userInfo').innerText = `👤 ${currentUsername}`;
-    
-    switchView('dashboard');
-    renderTable();
+    signInWithEmailAndPassword(auth, user, pass).catch((error) => {
+        alert("Gagal masuk: " + error.message);
+    });
+});
+
+document.getElementById('loginPass').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        document.getElementById('btnLogin').click();
+    }
 });
 
 document.getElementById('btnLogout').addEventListener('click', () => {
-    currentUserRole = "";
-    currentUserCabang = "";
-    document.getElementById('loginUser').value = '';
-    document.getElementById('loginPass').value = '';
-    document.getElementById('loginScreen').classList.remove('hidden');
-    document.getElementById('appContainer').classList.add('hidden');
+    signOut(auth).catch((error) => {
+        alert("Gagal keluar: " + error.message);
+    });
+});
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        const email = user.email.toLowerCase();
+        if (email === "superadmin@nnapparel.com") {
+            currentUserRole = "superadmin";
+            currentUsername = "Super Admin";
+            currentUserCabang = "Pusat";
+        } else if (email === "admin1@nnapparel.com") {
+            currentUserRole = "admin";
+            currentUsername = "Admin Toko 1";
+            currentUserCabang = "Toko 1";
+        } else if (email === "admin2@nnapparel.com") {
+            currentUserRole = "admin";
+            currentUsername = "Admin Toko 2";
+            currentUserCabang = "Toko 2";
+        } else {
+            currentUserRole = "admin";
+            currentUsername = email;
+            currentUserCabang = "Lainnya";
+        }
+
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('appContainer').classList.remove('hidden');
+        document.getElementById('userInfo').innerText = `👤 ${currentUsername}`;
+        
+        switchView('dashboard');
+        renderTable();
+    } else {
+        currentUserRole = "";
+        currentUserCabang = "";
+        currentUsername = "";
+        document.getElementById('loginUser').value = '';
+        document.getElementById('loginPass').value = '';
+        document.getElementById('loginScreen').classList.remove('hidden');
+        document.getElementById('appContainer').classList.add('hidden');
+    }
 });
 
 // --- FITUR KOMPRESI FOTO ---
@@ -216,8 +244,11 @@ btnAddOrder.addEventListener('click', async () => {
 });
 
 function clearForm() {
-    document.querySelectorAll('input').forEach(input => { if(input.type !== 'month') input.value = ''; });
-    document.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+    const formSection = document.getElementById('viewInput');
+    if (formSection) {
+        formSection.querySelectorAll('input').forEach(input => { if(input.type !== 'month') input.value = ''; });
+        formSection.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+    }
     fotoUrlLama = "";
     cabangLama = "";
     calculateLive();
@@ -231,6 +262,12 @@ function renderTable() {
     
     // Logika Filter Ganda (Bulan & Cabang)
     let dataDitampilkan = dataPesanan;
+    
+    // Filter otomatis berdasarkan role cabang
+    if (currentUserRole === 'admin') {
+        dataDitampilkan = dataDitampilkan.filter(p => (p.cabang || 'Pusat') === currentUserCabang);
+    }
+
     if (filterBulanValue !== "") {
         dataDitampilkan = dataDitampilkan.filter(p => p.tanggal && p.tanggal.startsWith(filterBulanValue));
     }
