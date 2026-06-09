@@ -255,6 +255,16 @@ function clearForm() {
 }
 
 // --- FUNGSI MENGGAMBAR TABEL & MENGHITUNG KARTU DASHBOARD ---
+function escapeHtml(unsafe) {
+    if (unsafe == null) return "";
+    return String(unsafe)
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+}
+
 function renderTable() {
     const tableBody = document.getElementById('tableBody');
     const tableFooter = document.getElementById('tableFooter');
@@ -292,15 +302,16 @@ function renderTable() {
         if (p.estimasi && p.pengerjaan !== "Selesai") {
             let tglEstimasi = new Date(p.estimasi);
             let selisihHari = Math.ceil((tglEstimasi - hariIni) / (1000 * 60 * 60 * 24));
-            if (selisihHari < 0) { teksEstimasi += `<br><span class="estimasi-telat">Lewat ${Math.abs(selisihHari)} Hari!</span>`; } 
-            else if (selisihHari <= 2) { teksEstimasi += `<br><span class="estimasi-dekat">Sisa ${selisihHari} Hari</span>`; kelasEstimasi = "estimasi-dekat"; } 
+            if (selisihHari < 0) { teksEstimasi += '<br><span class="estimasi-telat">Lewat ' + Math.abs(selisihHari) + ' Hari!</span>'; } 
+            else if (selisihHari <= 2) { teksEstimasi += '<br><span class="estimasi-dekat">Sisa ' + selisihHari + ' Hari</span>'; kelasEstimasi = "estimasi-dekat"; } 
             else { kelasEstimasi = "estimasi-aman"; }
         }
 
-        const textSisa = p.sisaTagihan <= 0 ? '<span style="color:green; font-weight:bold;">LUNAS</span>' : `Rp ${p.sisaTagihan.toLocaleString('id-ID')}`;
-        const imgTag = p.fotoUrl ? `<a href="${p.fotoUrl}" target="_blank"><img src="${p.fotoUrl}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;"></a>` : '-';
+        const textSisa = p.sisaTagihan <= 0 ? '<span style="color:green; font-weight:bold;">LUNAS</span>' : 'Rp ' + p.sisaTagihan.toLocaleString('id-ID');
+        const safeFotoUrl = escapeHtml(p.fotoUrl);
+        const imgTag = p.fotoUrl ? '<a href="' + safeFotoUrl + '" target="_blank"><img src="' + safeFotoUrl + '" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;"></a>' : '-';
         
-        const cabangLabel = `<span style="background-color:#e1f5fe; color:#0288d1; padding:3px 6px; border-radius:4px; font-weight:bold;">${p.cabang || 'Pusat'}</span>`;
+        const cabangLabel = '<span style="background-color:#e1f5fe; color:#0288d1; padding:3px 6px; border-radius:4px; font-weight:bold;">' + escapeHtml(p.cabang || 'Pusat') + '</span>';
 
         totalPcs += p.pcs;
         totalHargaSemua += p.total;
@@ -308,31 +319,32 @@ function renderTable() {
         totalPelunasanSemua += p.pelunasan;
         totalSisaSemua += (p.sisaTagihan > 0 ? p.sisaTagihan : 0);
 
-        let tombolAksi = `<button class="btn-edit" onclick="editData('${p.id}')">Edit</button>`;
+        const safeId = escapeHtml(p.id);
+        let tombolAksi = '<button class="btn-edit" onclick="editData(\'' + safeId + '\')">Edit</button>';
         if (currentUserRole === 'superadmin') {
-            tombolAksi += `<button class="btn-delete" onclick="deleteData('${p.id}')">Hapus</button>`;
+            tombolAksi += '<button class="btn-delete" onclick="deleteData(\'' + safeId + '\')">Hapus</button>';
         }
 
         const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${index + 1}</td>
-            <td><strong>${p.invoiceId || '-'}</strong></td>
-            <td style="text-align:center;">${imgTag}</td>
-            <td><strong>${p.nama}</strong><br><small>${p.tanggal}</small></td>
-            <td>${p.jenisOrder}</td>
-            <td>${p.bahan}<br><small>${p.kerah} / ${p.cutting}</small></td>
-            <td>${p.pcs}</td>
-            <td>Rp ${p.harga.toLocaleString('id-ID')}</td>
-            <td><strong>Rp ${p.total.toLocaleString('id-ID')}</strong></td>
-            <td>Rp ${p.dp.toLocaleString('id-ID')}<br><small>${p.jenisPembayaranDp}</small></td>
-            <td>Rp ${p.pelunasan.toLocaleString('id-ID')}<br><small>${p.jenisPembayaranPelunasan}</small></td>
-            <td>${textSisa}</td>
-            <td class="${kelasEstimasi}">${teksEstimasi}</td>
-            <td><span class="status-badge ${warnaStatus}">${p.pengerjaan}</span></td>
-            <td>${p.penjahit}</td>
-            <td>${cabangLabel}</td>
-            <td>${tombolAksi}</td>
-        `;
+        tr.innerHTML = [
+            '<td>', (index + 1), '</td>',
+            '<td><strong>', escapeHtml(p.invoiceId || '-'), '</strong></td>',
+            '<td style="text-align:center;">', imgTag, '</td>',
+            '<td><strong>', escapeHtml(p.nama), '</strong><br><small>', escapeHtml(p.tanggal), '</small></td>',
+            '<td>', escapeHtml(p.jenisOrder), '</td>',
+            '<td>', escapeHtml(p.bahan), '<br><small>', escapeHtml(p.kerah), ' / ', escapeHtml(p.cutting), '</small></td>',
+            '<td>', p.pcs, '</td>',
+            '<td>Rp ', p.harga.toLocaleString('id-ID'), '</td>',
+            '<td><strong>Rp ', p.total.toLocaleString('id-ID'), '</strong></td>',
+            '<td>Rp ', p.dp.toLocaleString('id-ID'), '<br><small>', escapeHtml(p.jenisPembayaranDp), '</small></td>',
+            '<td>Rp ', p.pelunasan.toLocaleString('id-ID'), '<br><small>', escapeHtml(p.jenisPembayaranPelunasan), '</small></td>',
+            '<td>', textSisa, '</td>',
+            '<td class="', kelasEstimasi, '">', teksEstimasi, '</td>',
+            '<td><span class="status-badge ', warnaStatus, '">', escapeHtml(p.pengerjaan), '</span></td>',
+            '<td>', escapeHtml(p.penjahit), '</td>',
+            '<td>', cabangLabel, '</td>',
+            '<td>', tombolAksi, '</td>'
+        ].join('');
         tableBody.appendChild(tr);
     });
 
@@ -344,22 +356,22 @@ function renderTable() {
     if (currentUserRole === 'superadmin') {
         document.getElementById('cardOmzetWrapper').classList.remove('hidden');
         document.getElementById('cardPiutangWrapper').classList.remove('hidden');
-        tableFooter.innerHTML = `
-            <tr>
-                <td colspan="6" style="text-align: right; color: #007bff;"><strong>TOTAL REKAPITULASI DATA:</strong></td>
-                <td><strong>${totalPcs} PCS</strong></td>
-                <td>-</td>
-                <td style="color: #007bff;"><strong>Rp ${totalHargaSemua.toLocaleString('id-ID')}</strong></td>
-                <td style="color: #28a745;"><strong>Rp ${totalDpSemua.toLocaleString('id-ID')}</strong></td>
-                <td style="color: #28a745;"><strong>Rp ${totalPelunasanSemua.toLocaleString('id-ID')}</strong></td>
-                <td style="color: #dc3545;"><strong>Rp ${totalSisaSemua.toLocaleString('id-ID')}</strong></td>
-                <td colspan="5"></td>
-            </tr>
-        `;
+        tableFooter.innerHTML = [
+            '<tr>',
+                '<td colspan="6" style="text-align: right; color: #007bff;"><strong>TOTAL REKAPITULASI DATA:</strong></td>',
+                '<td><strong>', totalPcs, ' PCS</strong></td>',
+                '<td>-</td>',
+                '<td style="color: #007bff;"><strong>Rp ', totalHargaSemua.toLocaleString('id-ID'), '</strong></td>',
+                '<td style="color: #28a745;"><strong>Rp ', totalDpSemua.toLocaleString('id-ID'), '</strong></td>',
+                '<td style="color: #28a745;"><strong>Rp ', totalPelunasanSemua.toLocaleString('id-ID'), '</strong></td>',
+                '<td style="color: #dc3545;"><strong>Rp ', totalSisaSemua.toLocaleString('id-ID'), '</strong></td>',
+                '<td colspan="5"></td>',
+            '</tr>'
+        ].join('');
     } else {
         document.getElementById('cardOmzetWrapper').classList.add('hidden');
         document.getElementById('cardPiutangWrapper').classList.add('hidden');
-        tableFooter.innerHTML = ``;
+        tableFooter.innerHTML = "";
     }
 }
 
