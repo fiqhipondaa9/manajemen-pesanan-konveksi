@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
@@ -19,8 +19,8 @@ const storage = getStorage(app);
 const auth = getAuth(app);
 
 const pesananRef = collection(db, "pesanan");
-const q = query(pesananRef, orderBy("createdAt", "asc"));
 
+let unsubscribeSnapshot = null;
 let dataPesanan = [];
 let editId = null; 
 let fotoUrlLama = ""; 
@@ -95,9 +95,35 @@ onAuthStateChanged(auth, (user) => {
         document.getElementById('appContainer').classList.remove('hidden');
         document.getElementById('userInfo').innerText = `👤 ${currentUsername}`;
         
+        // --- REAL-TIME LISTENER BERDASARKAN ROLE ---
+        let qFilter;
+        if (currentUserRole === 'superadmin') {
+            qFilter = query(pesananRef, orderBy("createdAt", "asc"));
+        } else {
+            // Tanpa orderBy agar tidak mewajibkan pembuatan Composite Index di Firestore
+            qFilter = query(pesananRef, where("cabang", "==", currentUserCabang));
+        }
+
+        if (unsubscribeSnapshot) unsubscribeSnapshot(); // Hapus listener lama jika ada
+        unsubscribeSnapshot = onSnapshot(qFilter, (snapshot) => {
+            dataPesanan = [];
+            snapshot.forEach((doc) => { dataPesanan.push({ id: doc.id, ...doc.data() }); });
+            
+            // Urutkan manual berdasarkan tanggal karena query cabang tidak pakai orderBy
+            dataPesanan.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+            
+            if (currentUserRole !== "") renderTable(); 
+        }, (error) => {
+            console.error("Gagal mengambil data:", error);
+        });
+
         switchView('dashboard');
-        renderTable();
     } else {
+        if (unsubscribeSnapshot) {
+            unsubscribeSnapshot();
+            unsubscribeSnapshot = null;
+        }
+        dataPesanan = [];
         currentUserRole = "";
         currentUserCabang = "";
         currentUsername = "";
@@ -165,12 +191,7 @@ document.getElementById('btnResetFilter').addEventListener('click', () => {
     renderTable(); 
 });
 
-// --- FIREBASE REAL-TIME ---
-onSnapshot(q, (snapshot) => {
-    dataPesanan = [];
-    snapshot.forEach((doc) => { dataPesanan.push({ id: doc.id, ...doc.data() }); });
-    if (currentUserRole !== "") renderTable(); 
-});
+// Listener Real-time sudah dipindah ke onAuthStateChanged agar sesuai dengan Role
 
 // --- SIMPAN / EDIT KE FIREBASE ---
 const btnAddOrder = document.getElementById('btnAddOrder');
